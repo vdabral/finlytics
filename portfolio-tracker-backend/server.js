@@ -35,7 +35,9 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+      callback(null, true); // allow all origins
+    },
     methods: ["GET", "POST"],
   },
 });
@@ -46,15 +48,12 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 
 // CORS configuration
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:5174",
-];
 app.use(
   cors({
-    origin: allowedOrigins,
-    credentials: true, // if you use cookies/auth
+    origin: (origin, callback) => {
+      callback(null, true); // allow all origins
+    },
+    credentials: true,
   })
 );
 
