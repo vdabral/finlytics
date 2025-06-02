@@ -1,0 +1,137 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+  namespace: portfolio-tracker
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-db
+  namespace: portfolio-tracker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-db
+  template:
+    metadata:
+      labels:
+        app: mongo-db
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: "admin"
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: portfolio-secrets
+              key: mongodb-root-password
+        - name: MONGO_INITDB_DATABASE
+          value: "portfolio_tracker"
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+        - name: mongo-init
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - mongo
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - mongo
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+      - name: mongo-init
+        configMap:
+          name: mongo-init-scripts
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-db-service
+  namespace: portfolio-tracker
+spec:
+  selector:
+    app: mongo-db
+  ports:
+  - port: 27017
+    targetPort: 27017
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongo-init-scripts
+  namespace: portfolio-tracker
+data:
+  init-mongo.js: |
+    // MongoDB initialization script for Kubernetes
+    db = db.getSiblingDB('portfolio_tracker');
+
+    // Create collections with validation
+    db.createCollection('users', {
+      validator: {
+        $jsonSchema: {
+          bsonType: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email: {
+              bsonType: 'string',
+              pattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            },
+            password: {
+              bsonType: 'string',
+              minLength: 6
+            },
+            role: {
+              bsonType: 'string',
+              enum: ['user', 'admin']
+            }
+          }
+        }
+      }
+    });
+
+    db.createCollection('portfolios');
+    db.createCollection('assets');
+    db.createCollection('transactions');
+
+    // Create indexes
+    db.users.createIndex({ email: 1 }, { unique: true });
+    db.portfolios.createIndex({ userId: 1 });
+    db.assets.createIndex({ symbol: 1 }, { unique: true });
+    db.transactions.createIndex({ portfolioId: 1 });
+    db.transactions.createIndex({ userId: 1 });
+
+    print('Portfolio Tracker database initialized in Kubernetes!');
