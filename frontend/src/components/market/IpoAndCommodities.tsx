@@ -2,67 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { marketService } from '../../services/assetService';
 import LoadingSpinner from '../ui/LoadingSpinner';
 
-// Add proper type definitions
+// Interfaces (define only once)
 interface IpoItem {
-  symbol: string
-  name: string
-  companyName?: string
-  exchange: string
-  price: number
-  listingDate: string
-  status: 'upcoming' | 'listed' | 'closed'
+  symbol: string;
+  name: string;
+  companyName?: string;
+  price: number;
+  listingDate: string;
+  status: string;
+  exchange?: string;
 }
 
 interface CommodityItem {
-  symbol: string
-  name: string
-  price: number
-  change: number
-  changePercent: number
-  unit: string
-  listingDate?: string
+  name: string;
+  symbol?: string;
+  price: number;
+  change: number;
+  changePercent?: number;
+  listingDate?: string;
+  unit?: string;
 }
 
 interface MutualFundItem {
-  symbol?: string
-  name?: string
-  schemeName?: string
-  nav?: number
-  price?: number
-  change?: number
-  changePercent?: number
-  category?: string
-  fundType?: string
-  fundHouse?: string
-  returns1Y?: number
-  returns1M?: number
-  returns3M?: number
-  returns6M?: number
-  aum?: string
+  name: string;
+  schemeName?: string;
+  nav: number;
+  price?: number;
+  change?: number;
+  category?: string;
+  fundType?: string;
+  rating?: number;
+  fundHouse?: string;
+  returns1Y?: number;
+  returns1M?: number;
+  returns3M?: number;
+  returns6M?: number;
+  aum?: string | number;
 }
 
-interface IpoData {
-  upcoming: IpoItem[]
-  recent: IpoItem[]
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-interface IpoAndCommoditiesProps {
-  // Empty interface is intentional for future props
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface IpoAndCommoditiesProps {}
 
 const IpoAndCommodities: React.FC<IpoAndCommoditiesProps> = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [ipoData, setIpoData] = useState<IpoData | null>(null);
+  // All hooks must be inside the component!
+  const [upcomingIpos, setUpcomingIpos] = useState<IpoItem[]>([]);
+  const [recentIpos, setRecentIpos] = useState<IpoItem[]>([]);
   const [commodities, setCommodities] = useState<CommodityItem[]>([]);
   const [mutualFunds, setMutualFunds] = useState<MutualFundItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState('ipo');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
+  // Only one fetchData function is needed
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -74,8 +65,23 @@ const IpoAndCommodities: React.FC<IpoAndCommoditiesProps> = () => {
         marketService.getMutualFunds()
       ]);
 
-      setIpoData(ipoResponse);
-      setCommodities(commoditiesResponse || []);
+      // Set exchange/unit to 'N/A' directly, don't reference item.exchange/unit
+      setUpcomingIpos(
+        ipoResponse
+          .map((item: IpoItem) => ({ ...item, exchange: 'N/A' }))
+          .filter(item => item.status === 'upcoming')
+      );
+
+      setRecentIpos(
+        ipoResponse
+          .map((item: IpoItem) => ({ ...item, exchange: 'N/A' }))
+          .filter(item => item.status !== 'upcoming')
+      );
+
+      setCommodities(
+        commoditiesResponse.map((item: CommodityItem) => ({ ...item, unit: 'N/A' }))
+      );
+
       setMutualFunds(mutualFundsResponse || []);
     } catch (err) {
       console.error('Error fetching IPO and commodities data:', err);
@@ -84,6 +90,11 @@ const IpoAndCommodities: React.FC<IpoAndCommoditiesProps> = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line
+  }, []);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -164,14 +175,14 @@ const IpoAndCommodities: React.FC<IpoAndCommoditiesProps> = () => {
           {activeSection === 'ipo' && (
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">IPO Information</h3>
-              {ipoData ? (
+              {upcomingIpos.length > 0 || recentIpos.length > 0 ? (
                 <div className="space-y-6">
                   {/* Current IPOs */}
-                  {ipoData.recent && ipoData.recent.length > 0 && (
+                  {recentIpos.length > 0 && (
                     <div>
                       <h4 className="font-medium text-gray-700 mb-3">Current IPOs</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {ipoData.recent.map((ipo: IpoItem, index: number) => (
+                        {recentIpos.map((ipo: IpoItem, index: number) => (
                           <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <div className="mb-3">
                               <h5 className="font-semibold text-gray-900">{ipo.name || ipo.companyName}</h5>
@@ -211,11 +222,11 @@ const IpoAndCommodities: React.FC<IpoAndCommoditiesProps> = () => {
                   )}
 
                   {/* Upcoming IPOs */}
-                  {ipoData.upcoming && ipoData.upcoming.length > 0 && (
+                  {upcomingIpos.length > 0 && (
                     <div>
                       <h4 className="font-medium text-gray-700 mb-3">Upcoming IPOs</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {ipoData.upcoming.map((ipo: IpoItem, index: number) => (
+                        {upcomingIpos.map((ipo: IpoItem, index: number) => (
                           <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                             <div className="mb-3">
                               <h5 className="font-semibold text-gray-900">{ipo.name || ipo.companyName}</h5>

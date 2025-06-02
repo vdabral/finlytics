@@ -2,6 +2,8 @@ import { api } from './api'
 import { indianStockService } from './indianStockService'
 import type { Asset, PriceHistoryPoint, ApiResponse } from '../types'
 
+
+
 // Market service type definitions
 interface MarketStock {
   symbol: string
@@ -9,7 +11,7 @@ interface MarketStock {
   price: number
   change: number
   changePercent: number
-  volume?: number
+  volume?: number // Ensure volume is optional
 }
 
 interface TrendingData {
@@ -99,39 +101,39 @@ export const assetService = {
       
       // Add gainers and losers from Indian Stock API
       if (trendingData.topGainers && Array.isArray(trendingData.topGainers)) {
-        allMarketAssets.push(...trendingData.topGainers.map((stock: Record<string, unknown>) => ({
-          _id: stock.symbol as string,
-          id: stock.symbol as string,
-          symbol: stock.symbol as string,
-          name: (stock.name as string) || (stock.symbol as string),
-          type: 'stock' as const,
-          currentPrice: stock.price as number || 0,
-          previousClose: (stock.previousClose as number) || (stock.price as number) || 0,
-          change: stock.change as number || 0,
-          changePercent: stock.changePercent as number || 0,
-          priceChange24h: stock.change as number || 0,
-          marketCap: stock.marketCap as number || 0,
-          volume: stock.volume as number || 0,
-          exchange: (stock.exchange as string) || 'NSE',
+        allMarketAssets.push(...trendingData.topGainers.map((stock: any) => ({
+          _id: stock.symbol || '',
+          id: stock.symbol || '',
+          symbol: stock.symbol || '',
+          name: stock.name || '',
+          type: "stock" as const,
+          currentPrice: parseFloat(stock.price || '0'),
+          previousClose: parseFloat(stock.previousClose || '0'),
+          change: parseFloat(stock.change || '0'),
+          changePercent: parseFloat(stock.changePercent || '0'),
+          priceChange24h: parseFloat(stock.change || '0'),
+          marketCap: parseFloat(stock.marketCap || '0'),
+          volume: typeof stock.volume === 'string' ? parseFloat(stock.volume) || 0 : (stock.volume || 0),
+          exchange: stock.exchange || '',
           lastUpdated: (stock.lastUpdated as string) || new Date().toISOString()
         })))
       }
       
       if (trendingData.topLosers && Array.isArray(trendingData.topLosers)) {
-        allMarketAssets.push(...trendingData.topLosers.map((stock: Record<string, unknown>) => ({
-          _id: stock.symbol as string,
-          id: stock.symbol as string,
-          symbol: stock.symbol as string,
-          name: (stock.name as string) || (stock.symbol as string),
-          type: 'stock' as const,
-          currentPrice: stock.price as number || 0,
-          previousClose: (stock.previousClose as number) || (stock.price as number) || 0,
-          change: stock.change as number || 0,
-          changePercent: stock.changePercent as number || 0,
-          priceChange24h: stock.change as number || 0,
-          marketCap: stock.marketCap as number || 0,
-          volume: stock.volume as number || 0,
-          exchange: (stock.exchange as string) || 'NSE',
+        allMarketAssets.push(...trendingData.topLosers.map((stock: any) => ({
+          _id: stock.symbol || '',
+          id: stock.symbol || '',
+          symbol: stock.symbol || '',
+          name: stock.name || '',
+          type: "stock" as const,
+          currentPrice: parseFloat(stock.price || '0'),
+          previousClose: parseFloat(stock.previousClose || '0'),
+          change: parseFloat(stock.change || '0'),
+          changePercent: parseFloat(stock.changePercent || '0'),
+          priceChange24h: parseFloat(stock.change || '0'),
+          marketCap: parseFloat(stock.marketCap || '0'),
+          volume: typeof stock.volume === 'string' ? parseFloat(stock.volume) || 0 : (stock.volume || 0),
+          exchange: stock.exchange || '',
           lastUpdated: (stock.lastUpdated as string) || new Date().toISOString()
         })))
       }
@@ -295,7 +297,9 @@ export const assetService = {
             changePercent: parseFloat(stock.percent_change) || 0,
             priceChange24h: parseFloat(stock.net_change) || 0,
             marketCap: stock.marketCap || 0,
-            volume: stock.volume || 0,
+            volume: typeof stock.volume === 'string' 
+              ? parseFloat(stock.volume) || 0 
+              : (stock.volume || 0),
             exchange: stock.exchange_type === 'NSI' ? 'NSE' : stock.exchange || 'NSE',
             lastUpdated: stock.lastUpdated || new Date().toISOString()
           };
@@ -322,7 +326,9 @@ export const assetService = {
             changePercent: parseFloat(stock.percent_change) || 0,
             priceChange24h: parseFloat(stock.net_change) || 0,
             marketCap: stock.marketCap || 0,
-            volume: stock.volume || 0,
+            volume: typeof stock.volume === 'string' 
+              ? parseFloat(stock.volume) || 0 
+              : (stock.volume || 0),
             exchange: stock.exchange_type === 'NSI' ? 'NSE' : stock.exchange || 'NSE',
             lastUpdated: stock.lastUpdated || new Date().toISOString()
           };
@@ -492,7 +498,7 @@ export const marketService = {  async getTrending(): Promise<TrendingData> {
   },
 
   async getCommodities(): Promise<CommodityItem[]> {
-    const response = await api.get<ApiResponse<CommodityItem[]>>('/indian-stocks/commodities')
+    const response = await api.get<ApiResponse<CommodityItem>>('/indian-stocks/commodities')
     const data = response.data.data || response.data
     if (!data) {
       throw new Error('No data received from API')
@@ -501,7 +507,7 @@ export const marketService = {  async getTrending(): Promise<TrendingData> {
   },
 
   async getMutualFunds(): Promise<MutualFundItem[]> {
-    const response = await api.get<ApiResponse<MutualFundItem[]>>('/indian-stocks/mutual-funds')
+    const response = await api.get<ApiResponse<MutualFundItem>>('/indian-stocks/mutual-funds')
     const data = response.data.data || response.data
     if (!data) {
       throw new Error('No data received from API')
@@ -527,3 +533,20 @@ export const marketService = {  async getTrending(): Promise<TrendingData> {
     return Array.isArray(data) ? data : []
   }
 }
+
+// Remove the conflicting import and define locally
+// Remove this line:
+// import { IndianStockData } from './indianStockService'
+
+// Now fix your stock mappings by using more type assertions
+// In the existing code:
+// allMarketAssets.push(...trendingData.topGainers.map((stock: any) => ({
+//   _id: stock.symbol || '',
+//   id: stock.symbol || '',
+//   // rest of mapping
+// })));
+
+// Remove these duplicate lines entirely (around 546-559):
+// allMarketAssets.push(...trendingData.topGainers.map((stock: IndianStockData) => ({
+// ...
+// volume: typeof stock.volume === 'string' ? parseFloat(stock.volume) || 0 : (stock.volume || 0)

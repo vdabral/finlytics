@@ -35,7 +35,7 @@ async function quickSeed() {
         exchange: "NSE",
         currency: "INR",
         sector: "Energy",
-        description: "Largest private sector corporation in India"
+        description: "Largest private sector corporation in India",
       },
       {
         symbol: "TCS",
@@ -44,7 +44,7 @@ async function quickSeed() {
         exchange: "NSE",
         currency: "INR",
         sector: "Information Technology",
-        description: "Leading global IT services organization"
+        description: "Leading global IT services organization",
       },
       {
         symbol: "HDFCBANK",
@@ -53,7 +53,7 @@ async function quickSeed() {
         exchange: "NSE",
         currency: "INR",
         sector: "Financial Services",
-        description: "Leading private sector bank in India"
+        description: "Leading private sector bank in India",
       },
       {
         symbol: "INFY",
@@ -62,8 +62,8 @@ async function quickSeed() {
         exchange: "NSE",
         currency: "INR",
         sector: "Information Technology",
-        description: "Global leader in digital services and consulting"
-      }
+        description: "Global leader in digital services and consulting",
+      },
     ];
 
     const createdAssets = await Asset.insertMany(assets);
@@ -72,7 +72,7 @@ async function quickSeed() {
     // Seed users
     console.log("Seeding users...");
     const hashedPassword = await bcrypt.hash("password123", 12);
-    
+
     const users = [
       {
         email: "demo@example.com",
@@ -190,7 +190,6 @@ async function quickSeed() {
     console.log("\nDemo accounts:");
     console.log("- demo@example.com (password: password123)");
     console.log("- admin@example.com (password: password123) [Admin]");
-
   } catch (error) {
     console.error("Seeding failed:", error);
     process.exit(1);

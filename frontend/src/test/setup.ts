@@ -30,24 +30,6 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   disconnect: vi.fn(),
 }))
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-}
-global.localStorage = localStorageMock
-
-// Mock sessionStorage
-const sessionStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-}
-global.sessionStorage = sessionStorageMock
-
 // Mock fetch
 global.fetch = vi.fn()
 
@@ -68,3 +50,26 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError
 })
+
+// Add missing length and key properties to localStorage and sessionStorage mocks
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn((_index) => null) // Use _ prefix to indicate unused parameter
+};
+
+global.localStorage = localStorageMock as Storage;
+
+const sessionStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn((_index) => null) // Same here
+};
+
+global.sessionStorage = sessionStorageMock as Storage;

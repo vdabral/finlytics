@@ -62,7 +62,8 @@ describe("Transaction Endpoints", () => {
         assetId: assetId,
         quantity: 10,
         purchasePrice: 2400.0,
-      };      const response = await request(app)
+      };
+      const response = await request(app)
         .post(`/api/v1/portfolios/${portfolioId}/assets`)
         .set("Authorization", `Bearer ${authToken}`)
         .send(assetData)
@@ -93,7 +94,8 @@ describe("Transaction Endpoints", () => {
       const assetData = {
         assetId: assetId,
         quantity: 5,
-        purchasePrice: 2500.0,        fees: 25.0,
+        purchasePrice: 2500.0,
+        fees: 25.0,
       };
 
       await request(app)
@@ -151,7 +153,9 @@ describe("Transaction Endpoints", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Provide either assetId or symbol, not both");
+      expect(response.body.errors[0].msg).toContain(
+        "Provide either assetId or symbol, not both"
+      );
     });
 
     it("should fail when neither assetId nor symbol are provided", async () => {
@@ -167,7 +171,9 @@ describe("Transaction Endpoints", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Either assetId or symbol is required");
+      expect(response.body.errors[0].msg).toContain(
+        "Either assetId or symbol is required"
+      );
     });
 
     it("should fail with negative quantity", async () => {
@@ -184,7 +190,9 @@ describe("Transaction Endpoints", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Quantity must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Quantity must be a positive number"
+      );
     });
 
     it("should fail with negative price", async () => {
@@ -201,7 +209,9 @@ describe("Transaction Endpoints", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Purchase price or average price must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Purchase price or average price must be a positive number"
+      );
     });
 
     it("should fail with zero quantity", async () => {
@@ -218,7 +228,9 @@ describe("Transaction Endpoints", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Quantity must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Quantity must be a positive number"
+      );
     });
 
     it("should fail with invalid portfolio ID", async () => {
@@ -301,7 +313,9 @@ describe("Transaction Endpoints", () => {
       // Check if transactions are sorted by date (newest first)
       const transactions = response.body.data.transactions;
       expect(new Date(transactions[0].date)).toBeInstanceOf(Date);
-      expect(new Date(transactions[0].date) >= new Date(transactions[1].date)).toBe(true);
+      expect(
+        new Date(transactions[0].date) >= new Date(transactions[1].date)
+      ).toBe(true);
     });
 
     it("should filter transactions by type", async () => {
@@ -312,18 +326,26 @@ describe("Transaction Endpoints", () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.transactions).toHaveLength(2);
-      expect(response.body.data.transactions.every(t => t.type === "buy")).toBe(true);
+      expect(
+        response.body.data.transactions.every((t) => t.type === "buy")
+      ).toBe(true);
     });
 
     it("should filter transactions by asset", async () => {
       const response = await request(app)
-        .get(`/api/v1/portfolios/${portfolioId}/transactions?assetId=${assetId}`)
+        .get(
+          `/api/v1/portfolios/${portfolioId}/transactions?assetId=${assetId}`
+        )
         .set("Authorization", `Bearer ${authToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.transactions).toHaveLength(3);
-      expect(response.body.data.transactions.every(t => t.assetId._id.toString() === assetId.toString())).toBe(true);
+      expect(
+        response.body.data.transactions.every(
+          (t) => t.assetId._id.toString() === assetId.toString()
+        )
+      ).toBe(true);
     });
 
     it("should paginate transactions correctly", async () => {
@@ -444,7 +466,7 @@ describe("Transaction Endpoints", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -461,7 +483,7 @@ describe("Transaction Endpoints", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -478,7 +500,7 @@ describe("Transaction Endpoints", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -491,7 +513,7 @@ describe("Transaction Endpoints", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -605,12 +627,14 @@ describe("Transaction Endpoints", () => {
       const transaction = new Transaction(transactionData);
       await transaction.save();
 
-      expect(transaction.notes).toBe("Special chars: @#$%^&*()_+{}|:<>?[]\\;'\",./-`~");
+      expect(transaction.notes).toBe(
+        "Special chars: @#$%^&*()_+{}|:<>?[]\\;'\",./-`~"
+      );
     });
 
     it("should handle maximum length notes", async () => {
       const longNotes = "A".repeat(500);
-      
+
       const transactionData = {
         type: "buy",
         assetId: assetId,

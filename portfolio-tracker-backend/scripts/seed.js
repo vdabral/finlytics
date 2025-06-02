@@ -315,7 +315,8 @@ class DatabaseSeeder {
   async seedTransactions(users, portfolios, assets) {
     console.log("Seeding transactions...");
 
-    const transactions = [      // Tech Growth Portfolio transactions
+    const transactions = [
+      // Tech Growth Portfolio transactions
       {
         userId: users[0]._id,
         portfolioId: portfolios[0]._id,

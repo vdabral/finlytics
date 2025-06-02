@@ -1,7 +1,7 @@
 // API Response Types
 export interface ApiResponse<T = unknown> {
   success: boolean
-  data?: T
+  data?: T // Unified data property
   message?: string
   error?: string
 }
@@ -191,7 +191,7 @@ export interface AddAssetToPortfolioData {
 
 export interface ApiResponse<T> {
   success: boolean
-  data: T
+  data?: T
   message?: string
 }
 

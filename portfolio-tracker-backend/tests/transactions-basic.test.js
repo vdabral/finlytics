@@ -60,7 +60,8 @@ describe("Transaction Tests", () => {
         assetId: assetId,
         quantity: 10,
         purchasePrice: 2400.0,
-      };      const response = await request(app)
+      };
+      const response = await request(app)
         .post(`/api/v1/portfolios/${portfolioId}/assets`)
         .set("Authorization", `Bearer ${authToken}`)
         .send(assetData)
@@ -132,7 +133,7 @@ describe("Transaction Tests", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
   });

@@ -68,7 +68,8 @@ describe("Comprehensive Transaction Tests", () => {
         .post(`/api/v1/portfolios/${portfolioId}/assets`)
         .set("Authorization", `Bearer ${authToken}`)
         .send(assetData)
-        .expect(200);      expect(response.body.success).toBe(true);
+        .expect(200);
+      expect(response.body.success).toBe(true);
       expect(response.body.portfolio).toBeDefined();
 
       // Verify transaction was created
@@ -152,7 +153,9 @@ describe("Comprehensive Transaction Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Provide either assetId or symbol, not both");
+      expect(response.body.errors[0].msg).toContain(
+        "Provide either assetId or symbol, not both"
+      );
     });
 
     it("should fail when neither assetId nor symbol are provided", async () => {
@@ -168,7 +171,9 @@ describe("Comprehensive Transaction Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Either assetId or symbol is required");
+      expect(response.body.errors[0].msg).toContain(
+        "Either assetId or symbol is required"
+      );
     });
 
     it("should fail with negative quantity", async () => {
@@ -185,7 +190,9 @@ describe("Comprehensive Transaction Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Quantity must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Quantity must be a positive number"
+      );
     });
 
     it("should fail with negative price", async () => {
@@ -202,7 +209,9 @@ describe("Comprehensive Transaction Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Purchase price or average price must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Purchase price or average price must be a positive number"
+      );
     });
 
     it("should fail with zero quantity", async () => {
@@ -219,7 +228,9 @@ describe("Comprehensive Transaction Tests", () => {
         .expect(400);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.errors[0].msg).toContain("Quantity must be a positive number");
+      expect(response.body.errors[0].msg).toContain(
+        "Quantity must be a positive number"
+      );
     });
 
     it("should fail with invalid portfolio ID", async () => {
@@ -302,7 +313,9 @@ describe("Comprehensive Transaction Tests", () => {
       // Check if transactions are sorted by date (newest first)
       const transactions = response.body.data.transactions;
       expect(new Date(transactions[0].date)).toBeInstanceOf(Date);
-      expect(new Date(transactions[0].date) >= new Date(transactions[1].date)).toBe(true);
+      expect(
+        new Date(transactions[0].date) >= new Date(transactions[1].date)
+      ).toBe(true);
     });
 
     it("should filter transactions by type", async () => {
@@ -313,16 +326,25 @@ describe("Comprehensive Transaction Tests", () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.transactions).toHaveLength(2);
-      expect(response.body.data.transactions.every(t => t.type === "buy")).toBe(true);
-    });    it("should filter transactions by asset", async () => {
+      expect(
+        response.body.data.transactions.every((t) => t.type === "buy")
+      ).toBe(true);
+    });
+    it("should filter transactions by asset", async () => {
       const response = await request(app)
-        .get(`/api/v1/portfolios/${portfolioId}/transactions?assetId=${assetId}`)
+        .get(
+          `/api/v1/portfolios/${portfolioId}/transactions?assetId=${assetId}`
+        )
         .set("Authorization", `Bearer ${authToken}`)
         .expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.data.transactions).toHaveLength(3);
-      expect(response.body.data.transactions.every(t => t.assetId._id.toString() === assetId.toString())).toBe(true);
+      expect(
+        response.body.data.transactions.every(
+          (t) => t.assetId._id.toString() === assetId.toString()
+        )
+      ).toBe(true);
     });
 
     it("should paginate transactions correctly", async () => {
@@ -443,7 +465,7 @@ describe("Comprehensive Transaction Tests", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -460,7 +482,7 @@ describe("Comprehensive Transaction Tests", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -477,7 +499,7 @@ describe("Comprehensive Transaction Tests", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -490,7 +512,7 @@ describe("Comprehensive Transaction Tests", () => {
       };
 
       const transaction = new Transaction(transactionData);
-      
+
       await expect(transaction.save()).rejects.toThrow();
     });
 
@@ -516,7 +538,7 @@ describe("Comprehensive Transaction Tests", () => {
 
     it("should validate all transaction types", async () => {
       const types = ["buy", "sell", "dividend", "split", "merger"];
-      
+
       for (const type of types) {
         const transactionData = {
           type: type,
@@ -625,12 +647,14 @@ describe("Comprehensive Transaction Tests", () => {
       const transaction = new Transaction(transactionData);
       await transaction.save();
 
-      expect(transaction.notes).toBe("Special chars: @#$%^&*()_+{}|:<>?[]\\;'\",./-`~");
+      expect(transaction.notes).toBe(
+        "Special chars: @#$%^&*()_+{}|:<>?[]\\;'\",./-`~"
+      );
     });
 
     it("should handle maximum length notes", async () => {
       const longNotes = "A".repeat(500);
-      
+
       const transactionData = {
         type: "buy",
         assetId: assetId,

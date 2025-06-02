@@ -126,7 +126,8 @@ class PortfolioService {
       logger.error("Error deleting portfolio:", error);
       throw error;
     }
-  }  /**
+  }
+  /**
    * Add asset to portfolio
    */ async addAssetToPortfolio(portfolioId, userId, assetData) {
     try {
@@ -158,7 +159,7 @@ class PortfolioService {
       if (!existingAsset) {
         // Add new asset reference
         portfolio.assets.push(assetId);
-      }      // Create a buy transaction
+      } // Create a buy transaction
       const Transaction = require("../models/Transaction");
       const transaction = new Transaction({
         type: "buy",
@@ -336,7 +337,8 @@ class PortfolioService {
       const query = { portfolioId };
 
       if (type) query.type = type;
-      if (assetId) query.assetId = assetId;      const transactions = await Transaction.find(query)
+      if (assetId) query.assetId = assetId;
+      const transactions = await Transaction.find(query)
         .populate("assetId", "symbol name")
         .sort({ date: -1 })
         .limit(limit * 1)
